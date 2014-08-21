@@ -1,0 +1,19 @@
+{
+    "name": "mnking/assets",
+    "description": "",
+    "authors": [
+        {
+            "name": "mnking",
+            "email": "vuongsemail@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "autoload": {
+        "psr-0": {
+            "Mnking\\Assets": "src/"
+        }
+    },
+    "minimum-stability": "dev"
+}
