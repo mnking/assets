@@ -1,2 +1,3 @@
 assets
 ======
+'\Mnking\Assets\AssetsServiceProvider'
