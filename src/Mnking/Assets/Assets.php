@@ -84,8 +84,13 @@ class Assets
 
         $url = $this->buildLinkByGroup($group);
         $output = '';
-        foreach($this->js[$group] as $file)
-            $output .= '<script type="text/javascript" src="'.$url.$file.'"></script>'."\n";
+        foreach($this->js[$group] as $file){
+            if(!$this->isRemoteLink($file)){
+                $file = $url.$file;
+            }
+            $output .= '<script type="text/javascript" src="'.$file.'"></script>'."\n";
+        }
+
 
         return $output;
     }
@@ -94,23 +99,12 @@ class Assets
     {
         if(isset($this->groups[$group])){
             $dir = $this->groups[$group];
-            if($this->isBackDir($dir)){
-                $dir = $this->makeCoreDir($dir);
-            }
         }else{
             $dir = '/';
         }
         return \URL::to($dir);
     }
 
-    protected function makeCoreDir($dir)
-    {
-        $dir = str_replace("../","",$dir);
-        $source = base_path($dir);
-        $des = public_path($this->config['core_dir']);
-        File::copyDirectory($source, $des);
-        return $this->config['core_dir'];
-    }
 
     protected function isBackDir($pattern)
     {
@@ -126,7 +120,7 @@ class Assets
             return;
         }
         $tmp = $this->$type;
-        $tmp[$group][] = $this->groupDir . $asset;
+        $tmp[$group][] = ($this->isRemoteLink($asset)? '': $this->groupDir) . $asset;
         $this->$type = $tmp;
     }
 
