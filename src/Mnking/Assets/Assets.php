@@ -22,12 +22,6 @@ class Assets
 
     private $config;
 
-    public function test()
-    {
-        print_r($this->css);
-        print_r($this->js);
-    }
-
     /**
      * Constructor
      */
@@ -37,6 +31,13 @@ class Assets
         $this->groups = $this->config['group'];
     }
 
+    /**
+     * Add new group to groups
+     *
+     * @param $group
+     * @param $dir is a path to group or name of exists group
+     * @return $this
+     */
     public function addGroup($group, $dir)
     {
         if ($this->groupExists($dir)) {
@@ -46,23 +47,63 @@ class Assets
         return $this;
     }
 
+    /**
+     * Add new css to group
+     *
+     * @param $asset
+     * @param string $group default is public
+     * @return $this
+     */
     public function addCss($asset,$group = 'public')
     {
         $this->add($asset,$group,'css');
         return $this;
     }
 
+    /**
+     * Add new javascript to group
+     *
+     * @param $asset
+     * @param string $group default is public
+     * @return $this
+     */
     public function addJs($asset, $group = 'public')
     {
         $this->add($asset,$group,'js');
         return $this;
     }
 
-    public function css()
+    /**
+     * Build the Link CSS tags.
+     *
+     * @param string $group
+     * @return null|string
+     */
+    public function css($group = 'public')
     {
+        if( ! $this->css)
+            return null;
 
+        $url = $this->buildLinkByGroup($group);
+        $output = '';
+        foreach($this->css[$group] as $file){
+
+            if(!$this->isRemoteLink($file)){
+                $file = $url.$file;
+            }
+
+            $output .= '<link rel="stylesheet" type="text/css" href="'.$file.'">'."\n";
+        }
+
+        return $output;
     }
 
+    /**
+     * Use to add sub dir to assets
+     *
+     * @param $dir
+     * @return $this
+     */
     public function dir($dir)
     {
         if($dir){
@@ -91,10 +132,15 @@ class Assets
             $output .= '<script type="text/javascript" src="'.$file.'"></script>'."\n";
         }
 
-
         return $output;
     }
 
+    /**
+     * Every group has a link to run assets. Let build it for you
+     *
+     * @param $group
+     * @return mixed
+     */
     protected function buildLinkByGroup($group)
     {
         if(isset($this->groups[$group])){
@@ -105,12 +151,25 @@ class Assets
         return \URL::to($dir);
     }
 
-
+    /**
+     * Determine group path has back dir
+     *
+     * @param $pattern
+     * @return int
+     */
     protected function isBackDir($pattern)
     {
         return preg_match('/../i',$pattern);
     }
 
+    /**
+     * Add css and js assets to array. Beside it add subdir in front of asset.
+     * If asset is a remote link , not add subdir
+     *
+     * @param $asset
+     * @param $group
+     * @param $type
+     */
     protected function add($asset,$group,$type)
     {
         if (is_array($asset)) {
@@ -124,6 +183,12 @@ class Assets
         $this->$type = $tmp;
     }
 
+    /**
+     * Determine a group is exists in groups
+     *
+     * @param $group
+     * @return bool
+     */
     protected function groupExists($group)
     {
         return array_key_exists($group, $this->groups);
